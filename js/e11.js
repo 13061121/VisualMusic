@@ -1,17 +1,16 @@
-// 7号可视化效果
+// 11号可视化效果
 define(['analyser', 'util'], function (analyser, util) {
 
     var cover = 'e11.jpg';
 
     var canvas = util.getById('visual-canvas'),
         ctx = canvas.getContext('2d'),
-        data, i, len, cx, cy, angle, beginAngle = 0, total,
-        len = analyser.getFftSize() / 5, r = 2,
+        data, i, cx, cy, angle, beginAngle = 0,
+        len = analyser.getFftSize() / 4,
         twoPI = 2 * Math.PI,
-        angleGap = twoPI / 3,
         color = 'rgba(186, 135, 72, 0.5)',
         r2 = 0,
-        rotateAngle = 0;
+        rotateAngle = 0,
         is_increase = true,
         initOrNot = false;
 
@@ -62,8 +61,8 @@ define(['analyser', 'util'], function (analyser, util) {
         ctx.strokeStyle = "white";
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(startx + proc * processbarWdith, starty, 18, rotateAngle+0, rotateAngle+Math.PI/4);
-        ctx.arc(startx + proc * processbarWdith, starty, 18, rotateAngle+Math.PI/4,rotateAngle+0,true);
+        ctx.arc(startx + proc * processbarWdith, starty, 18, rotateAngle, rotateAngle+Math.PI/4);
+        ctx.arc(startx + proc * processbarWdith, starty, 18, rotateAngle+Math.PI/4,rotateAngle,true);
         ctx.closePath();
         ctx.stroke();
 
@@ -77,24 +76,28 @@ define(['analyser', 'util'], function (analyser, util) {
         // 绘制滚动图标
         ctx.fillStyle = "white";
         ctx.beginPath();
-        ctx.arc(startx + proc * processbarWdith, starty, 15, 0, 2 * Math.PI)
+        ctx.arc(startx + proc * processbarWdith, starty, 15, 0, 2 * Math.PI);
         ctx.closePath();
         ctx.fill();
 
         // 绘制music visualizer
         ctx.strokeStyle = color;
-        ctx.lineWidth = 10;
-        for (i = 12; i < len; i += 2) {
+        ctx.lineWidth = 2;
+        var wid = canvas.width*0.8/len;
+        var heig = canvas.height/2;
+        for (i = 0; i < len; i += 1) {
             angle += 0.2;
+            var t = canvas.width*0.1+i*wid;
             ctx.beginPath();
-            ctx.moveTo(cx + r * data[i] * Math.sin(angle), cy + r * data[i] * Math.cos(angle));
-            ctx.lineTo(cx + r * data[i] * Math.sin(angle + angleGap), cy + r * data[i] * Math.cos(angle + angleGap));
-            ctx.lineTo(cx + r * data[i] * Math.sin(angle + angleGap * 2), cy + r * data[i] * Math.cos(angle + angleGap * 2));
+            ctx.moveTo(t,  heig-data[i]);
+            ctx.lineTo(t,  heig+data[i]);
+            ctx.lineTo(t+wid,  heig+data[i]);
+            ctx.lineTo(t+wid,  heig-data[i]);
             ctx.closePath();
             ctx.stroke();
-            total += data[i];
         }
         beginAngle = (beginAngle + 0.00001 * total) % twoPI;
+
         ctx.restore();
     }
 
