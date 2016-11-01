@@ -8,7 +8,7 @@ define(['analyser', 'util'], function (analyser, util) {
         data, i, cx, cy, angle, beginAngle = 0,
         len = analyser.getFftSize() / 4,
         twoPI = 2 * Math.PI,
-        color = 'rgba(186, 135, 72, 0.5)',
+        //color = 'rgba(186, 135, 72, 0.5)',
         r2 = 0,
         rotateAngle = 0,
         is_increase = true,
@@ -81,10 +81,18 @@ define(['analyser', 'util'], function (analyser, util) {
         ctx.fill();
 
         // 绘制music visualizer
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
         var wid = canvas.width*0.8/len;
-        var heig = canvas.height/2;
+        var heig = canvas.height / 2;
+        var color_t1 ='rgba(220, 0, 0, 0.9)';
+        var color_t2 ='rgba(0, 225, 0, 0.9)';
+        var grd=ctx.createLinearGradient(0,canvas.height*0.25,0,canvas.height*0.75);
+        grd.addColorStop(0,color_t1);
+        grd.addColorStop(.5,color_t2);
+        grd.addColorStop(1,color_t1);
+        //ctx.strokeStyle = color;
+        console.log(grd);
+        ctx.strokeStyle = grd;
+        ctx.lineWidth = 2;
         for (i = 0; i < len; i += 1) {
             angle += 0.2;
             var t = canvas.width*0.1+i*wid;
