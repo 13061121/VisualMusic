@@ -2,7 +2,7 @@
 define(['analyser', 'util'], function (analyser, util) {
 
 
-    var cover = 'e11.jpg';
+    var cover = 'e12.jpg';
 
     var canvas = util.getById('visual-canvas'),
         ctx = canvas.getContext('2d'),
