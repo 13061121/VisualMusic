@@ -124,7 +124,6 @@ define(['analyser', 'util'], function (analyser, util) {
             //ctx.arc(cx + (inR[i][1]+outR[i][1])/2, cy + (inR[i][2]+outR[i][2])/2, 2, angle, angle + twoPI);
             ctx.closePath();
             ctx.stroke();
-            console.log(outR[i][1] - outR[t][1]);
             t = i;
         }
         beginAngle = (beginAngle + 0.005) % twoPI; //旋转速度
