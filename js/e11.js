@@ -6,7 +6,7 @@ define(['analyser', 'util'], function (analyser, util) {
     var canvas = util.getById('visual-canvas'),
         ctx = canvas.getContext('2d'),
         data, i, cx, cy, beginAngle = 0,
-        len = analyser.getFftSize() / 4,
+        len = analyser.getFftSize() / 5,
         twoPI = 2 * Math.PI,
         //color = 'rgba(186, 135, 72, 0.5)',
         r2 = 0,
@@ -92,16 +92,17 @@ define(['analyser', 'util'], function (analyser, util) {
         //ctx.strokeStyle = color;
         ctx.strokeStyle = grd;
         ctx.lineWidth = 2;
+        ctx.beginPath();
         for (i = 0; i < len; i += 1) {
             var t = canvas.width*0.1+i*wid;
-            ctx.beginPath();
+
             ctx.moveTo(t,  heig-data[i]);
             ctx.lineTo(t,  heig+data[i]);
             ctx.lineTo(t+wid,  heig+data[i]);
             ctx.lineTo(t+wid,  heig-data[i]);
-            ctx.closePath();
-            ctx.stroke();
         }
+        ctx.closePath();
+        ctx.stroke();
         beginAngle = (beginAngle + 0.00001 * total) % twoPI;
 
         ctx.restore();

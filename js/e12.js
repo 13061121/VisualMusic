@@ -28,7 +28,6 @@ define(['analyser', 'util'], function (analyser, util) {
         var r = Math.min(canvas.width / 4, canvas.height / 4);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.globalCompositeOperation = 'lighter';
-        var total = 0;
         if (is_increase && r2 == 60) {
             is_increase = false;
         }
@@ -84,15 +83,15 @@ define(['analyser', 'util'], function (analyser, util) {
 
         //混淆music数据
 
-        var outR = new Array(),
-            inR = new Array(),
+        var outR = [],
+            inR = [],
             ang, x, y, musicData,
             seg = twoPI / len;
 
         for (i = 0; i < len; i++) {
-            var t = (i * 7) % len;
+            t = (i * 7) % len;
             ang = angle + t * seg;
-            musicData = ( data[(i + len - 2) % len] + data[(i + len - 1) % len] + data[i] + data[(i + 1) % len] + data[(i + 2) % len] ) / 10;
+            musicData = data[i] / 2 ;   //( data[(i + len - 2) % len] + data[(i + len - 1) % len] + data[i] + data[(i + 1) % len] + data[(i + 2) % len] ) / 10;
             var cs = Math.cos(ang), sn = Math.sin(ang);
             x = (r + musicData) * cs;
             y = (r + musicData) * sn;
@@ -104,8 +103,8 @@ define(['analyser', 'util'], function (analyser, util) {
 
 
         // 绘制music visualizer
-        var color_t1 = 'rgba(220, 0, 0, 0.9)';
-        var color_t2 = 'rgba(20, 225, 25, 0.9)';
+        var color_t1 = 'rgba(220, 0, 0, 1.0)';
+        var color_t2 = 'rgba(20, 225, 25, 1.0)';
         var grd = ctx.createLinearGradient(0, canvas.height * 0.25, 0, canvas.height * 0.75);
         grd.addColorStop(0, color_t1);
         grd.addColorStop(.5, color_t2);
@@ -114,18 +113,16 @@ define(['analyser', 'util'], function (analyser, util) {
         ctx.strokeStyle = grd;
         ctx.lineWidth = 2;
         var t = len - 1;
+        ctx.beginPath();
         for (i = 0; i < len; i ++) {
-            ctx.beginPath();
             ctx.moveTo(cx + outR[t][1], cy + outR[t][2]);
             ctx.lineTo(cx + outR[i][1], cy + outR[i][2]);
             ctx.lineTo(cx + inR[i][1], cy + inR[i][2]);
             ctx.lineTo(cx + inR[t][1], cy + inR[t][2]);
-            ctx.lineTo(cx + outR[t][1], cy + outR[t][2]);
-            //ctx.arc(cx + (inR[i][1]+outR[i][1])/2, cy + (inR[i][2]+outR[i][2])/2, 2, angle, angle + twoPI);
-            ctx.closePath();
-            ctx.stroke();
             t = i;
         }
+        ctx.closePath();
+        ctx.stroke();
         beginAngle = (beginAngle + 0.005) % twoPI; //旋转速度
 
         ctx.restore();
