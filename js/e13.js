@@ -109,7 +109,7 @@ define(['analyser', 'util'], function (analyser, util) {
     }
 
     function init() {
-        util.setBg(11);
+        util.setBg(13);
         initOrNot = true;
     }
 
