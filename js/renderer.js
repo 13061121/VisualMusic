@@ -4,6 +4,7 @@ define(['util'], function (util) {
 var container = util.getById('threed-webgl-renderer'),
     $container = $('#threed-webgl-renderer'),
     renderer = new THREE.WebGLRenderer({
+        antialias: true,
         alpha: true
     });
 

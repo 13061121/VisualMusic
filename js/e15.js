@@ -8,10 +8,12 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
         centerParticles, centerGeometry, centerMaterial,
         littleParticles, littleGeometry, littleMaterial,
         outerParticles, outerGeometry, outerMaterial,
+        spotLight,lensFlare2,
+        textureFlare0 ,textureFlare3,flareColor,
         camera_a, camera_r, camera_d, camera_h, camera_f,
         i, h, sprite,
         rr = 600, r = 100,
-        cr = 200, lr = 20, oradius = 1000,
+        cr = 300, lr = 30, oradius = 1000,
         count = 1000, lcount = 500, ocount = 3000,
         langle = 0, lh = 0,
         data, len=20, total, avg,
@@ -40,7 +42,7 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
         camera_a += avg * 0.00005;
         camera_a %= twoPI;
 
-        langle += avg * 0.0001;
+        langle += avg * 0.00007;
         langle %= twoPI;
 
         if (camera_d == camera_r)
@@ -71,7 +73,7 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
             scene.remove(cubes[i]);
             geometries[i].dispose();
             materials[i].dispose();
-            geometry = new THREE.TorusGeometry(r + 0.8 * data[i * 5], 2, 4, 30, 2 * Math.PI);
+            geometry = new THREE.TorusGeometry(r + 0.8 * data[i * 5], 2, 4, 40, twoPI);
             material = new THREE.MeshBasicMaterial();
             material.color.setHSL(h + i / 20, 1.0, 0.8);
             cube = new THREE.Mesh(geometry, material);
@@ -83,10 +85,11 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
             cube.rotation.set(Math.PI / 2, ang, 0);
         }
 
-        centerMaterial.color.setHSL(h, 1.0, 0.8);
+        centerMaterial.color.setHSL(h, 1.0, 1.0);
 
-        for (var vertex of centerGeometry.vertices) {
-            var t = vertex.postiondata[0];
+        for (i=0;i<centerGeometry.vertices.length;i++) {
+            var vertex = centerGeometry.vertices[i],
+                t = vertex.postiondata[0];
             if (t < cr)
                 t++;
             else
@@ -98,26 +101,31 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
             vertex.postiondata[0] = t;
         }
 
-        if (Math.random() > 0.5)
-            lh++;
-        else
-            lh--;
+        lh += avg * 0.0005;
+        lh %= twoPI;
 
-        if (lh > r)
-            lh -= r;
+        var tt =rr+(lr+10)*Math.cos(lh);
 
-        littleParticles.position.set(rr * Math.cos(langle), rr * Math.sin(langle), lh);
+        littleParticles.position.set(tt * Math.cos(langle), tt * Math.sin(langle), (lr+10)*Math.sin(lh));
 
-        littleMaterial.color.setHSL(((h * 360 + 120) % 360) / 360, 1.0, 1.0);
+        littleParticles.rotateX(avg*0.0001);
+        littleParticles.rotateY(avg*0.0001);
+        littleParticles.rotateZ(avg*0.0001);
 
-        for (var vertex of littleGeometry.vertices) {
-            var alpha = Math.PI * 2 * Math.random(),
-                theta = Math.PI * Math.random(),
-                t = lr;
-            vertex.x = Math.sin(theta) * Math.cos(alpha) * t;
-            vertex.y = Math.sin(theta) * Math.sin(alpha) * t;
-            vertex.z = Math.cos(theta) * t;
-        }
+        //littleMaterial.color.setHSL(((h * 360 + 120) % 360) / 360, 1.0, 1.0);
+
+        // 取消空心小球的粒子运动
+        // for (i=0;i < littleGeometry.vertices.length;i++) {
+        //     var vertex = littleGeometry.vertices[i];
+        //     var alpha = Math.PI * 2 * Math.random(),
+        //         theta = Math.PI * Math.random(),
+        //         t = lr;
+        //     vertex.x = Math.sin(theta) * Math.cos(alpha) * t;
+        //     vertex.y = Math.sin(theta) * Math.sin(alpha) * t;
+        //     vertex.z = Math.cos(theta) * t;
+        // }
+
+        //outerMaterial.color.setHSL(((h * 360 + 120) % 360) / 360, 1.0, 1.0);
 
         renderer.render(scene, camera);
     }
@@ -148,11 +156,16 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
         materials = [];
         cubes = [];
 
+
+        textureFlare0 = THREE.ImageUtils.loadTexture("img/lenflare0_alpha.png");
+        textureFlare3 = THREE.ImageUtils.loadTexture("img/lensflare1.png");
+        flareColor = new THREE.Color(0xffffff);
+
         // 绘制圆环
 
         for (i = 0; i < len; i++) {
             var ang = Math.PI * 2 * i / len;
-            geometry = new THREE.TorusGeometry(r, 2, 4, 30, 2 * Math.PI);
+            geometry = new THREE.TorusGeometry(r, 2, 4, 40, twoPI);
             material = new THREE.MeshBasicMaterial({color: 0x00ff00});
             cube = new THREE.Mesh(geometry, material);
             geometries[i] = geometry;
@@ -162,6 +175,17 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
             cube.position.set(rr * Math.cos(ang), rr * Math.sin(ang), 0);
             cube.rotation.set(Math.PI / 2, ang, 0);
         }
+
+        // 中心发光体
+
+        spotLight = new THREE.SpotLight(0xffffff);
+        spotLight.position.set(0, 0, 0);
+        scene.add(spotLight);
+
+        var lensFlare = new THREE.LensFlare(textureFlare0, 350, 0, THREE.AdditiveBlending, flareColor);
+        lensFlare.add(textureFlare3, cr, 0, THREE.AdditiveBlending);
+        lensFlare.position = spotLight.position;
+        scene.add(lensFlare);
 
         //绘制内部“实心”小球
 
@@ -194,43 +218,62 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
 
         // 绘制转动的“空心”小球
 
-        // littleGeometry = new THREE.SphereGeometry(lr,20,20);
-        // littleMaterial = new THREE.MeshBasicMaterial({ color: 0x550000 } );
-        // littleParticles = new THREE.Mesh(littleGeometry, littleMaterial);
-        // scene.add(littleParticles);
+        // 绘制小球的环绕中心
 
+        var torGeometry = new THREE.TorusGeometry(rr,2,4,100,twoPI),
+            torMaterial = new THREE.MeshBasicMaterial({color: 0xffcc00}),
+            torcube =new THREE.Mesh(torGeometry,torMaterial);
+        scene.add(torcube);
 
-        littleGeometry = new THREE.Geometry();
-        littleMaterial = new THREE.PointCloudMaterial({
-            size: 1,
-            sizeAttenuation: false,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthTest: false,
+        littleGeometry = new THREE.SphereGeometry(lr,20,20);
+        // littleMaterial = new THREE.MeshBasicMaterial({
+        //     color: 0xcc0000,
+        //     depthTest:true
+        // });
+        littleMaterial = new THREE.MeshPhongMaterial({
+            opacity:1,
+            color: 0xff0000,
+            emissive: 0xffff00,
+            side: THREE.FrontSide,
+            shading: THREE.SmoothShading,
+            wireframe:true,
         });
-        littleMaterial.color.setHSL(0.3, 0.9, 0.5);
-        for (i = 0; i < lcount; i++) {
-            var vertex = new THREE.Vector3(),
-                alpha = Math.PI * 2 * Math.random(),
-                theta = Math.PI * Math.random(),
-                k1 = Math.sin(theta) * Math.cos(alpha),
-                k2 = Math.sin(theta) * Math.sin(alpha),
-                k3 = Math.cos(theta);
-            vertex.x = k1 * lr;
-            vertex.y = k2 * lr;
-            vertex.z = k3 * lr;
-            littleGeometry.vertices.push(vertex);
-        }
-        littleParticles = new THREE.PointCloud(littleGeometry, littleMaterial);
-        littleParticles.sortParticles = true;
+        littleParticles = new THREE.Mesh(littleGeometry, littleMaterial);
         scene.add(littleParticles);
+
+        // littleGeometry = new THREE.Geometry();
+        // littleMaterial = new THREE.PointCloudMaterial({
+        //     size: 1,
+        //     sizeAttenuation: false,
+        //     transparent: true,
+        //     blending: THREE.AdditiveBlending,
+        //     depthTest: false,
+        // });
+        // littleMaterial.color.setHSL(0.3, 0.9, 0.5);
+        // for (i = 0; i < lcount; i++) {
+        //     var vertex = new THREE.Vector3(),
+        //         alpha = Math.PI * 2 * Math.random(),
+        //         theta = Math.PI * Math.random(),
+        //         k1 = Math.sin(theta) * Math.cos(alpha),
+        //         k2 = Math.sin(theta) * Math.sin(alpha),
+        //         k3 = Math.cos(theta);
+        //     vertex.x = k1 * lr;
+        //     vertex.y = k2 * lr;
+        //     vertex.z = k3 * lr;
+        //     littleGeometry.vertices.push(vertex);
+        // }
+        // littleParticles = new THREE.PointCloud(littleGeometry, littleMaterial);
+        // littleParticles.sortParticles = true;
+        // scene.add(littleParticles);
 
         // 绘制外围的“空心”大球背景
 
         outerGeometry = new THREE.Geometry();
+        sprite = THREE.ImageUtils.loadTexture( "img/spark1.png" );
         outerMaterial = new THREE.PointCloudMaterial({
-            size: 3,
+            size: 25,
             sizeAttenuation: false,
+            map: sprite,
             transparent: true,
             blending: THREE.AdditiveBlending,
             depthTest: false,
@@ -253,6 +296,7 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
                 vertex.x = k1 * t;
                 vertex.y = k2 * t;
                 vertex.z = k3 ;
+                vertex.z = k3 ;
                 outerGeometry.vertices.push(vertex);
             }
             zangle+=segz;
@@ -261,6 +305,8 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
         outerParticles = new THREE.PointCloud(outerGeometry, outerMaterial);
         outerParticles.sortParticles = true;
         scene.add(outerParticles);
+
+
 
         initOrNot = true;
     }
