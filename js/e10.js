@@ -9,7 +9,7 @@ var cover = 'e10.jpg',
     initOrNot = false;
 
 function draw() {
-    if (!material) {
+    if (!initOrNot) {
         init();
         return;
     }
@@ -43,52 +43,65 @@ function init() {
 
     scene = new THREE.Scene();
 
-    geometry = new THREE.Geometry();
-    sprite = THREE.ImageUtils.loadTexture( "img/spark1.png" );
-    material = new THREE.ParticleSystemMaterial({
-        size: 25,
-        sizeAttenuation: false,
-        map: sprite,
-        transparent: true,
-        blending: THREE.AdditiveBlending,
-        depthTest: false,
-    });
-    material.color.setHSL(1.0, 1.0, 1.0);
 
-    for (i = 0; i < 1000; i++) {
-        var vertex = new THREE.Vector3();
-        vertex.x = Math.random() * 3000 - 1500;
-        vertex.y = Math.random() * 3000 - 1500;
-        vertex.z = Math.random() * 2000 - 1000;
-        geometry.vertices.push(vertex);
-    }
+    // 加载sprite
 
-    particles = new THREE.ParticleSystem(geometry, material);
-    particles.sortParticles = true;
-    scene.add(particles);
+    sprite = new THREE.TextureLoader().load(
+        "img/spark1.png",
+        function (texture) {
+            if(geometry!=null)
+                return;
+            geometry = new THREE.Geometry();
+            material = new THREE.PointsMaterial({
+                size: 25,
+                sizeAttenuation: false,
+                map: texture,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthTest: false,
+            });
+            material.color.setHSL(1.0, 1.0, 1.0);
 
-    centerGeometry = new THREE.Geometry();
-    centerMaterial = new THREE.ParticleSystemMaterial({
-        size: 20,
-        sizeAttenuation: false,
-        map: sprite,
-        transparent: true,
-        blending: THREE.AdditiveBlending,
-        depthTest: false,
-    });
-    centerMaterial.color.setHSL(0.3, 0.8, 0.5);
-    for (i = 0; i < 1000; i++) {
-        var vertex = new THREE.Vector3();
-        vertex.x = Math.random() * 500 - 250;
-        vertex.y = Math.random() * 500 - 250;
-        vertex.z = Math.random() * 500 - 250;
-        centerGeometry.vertices.push(vertex);
-    }
-    centerParticles = new THREE.ParticleSystem(centerGeometry, centerMaterial);
-    centerParticles.sortParticles = true;
-    scene.add(centerParticles);
+            for (i = 0; i < 1000; i++) {
+                var vertex = new THREE.Vector3();
+                vertex.x = Math.random() * 3000 - 1500;
+                vertex.y = Math.random() * 3000 - 1500;
+                vertex.z = Math.random() * 2000 - 1000;
+                geometry.vertices.push(vertex);
+            }
 
-    initOrNot = true;
+            particles = new THREE.Points(geometry, material);
+            particles.sortParticles = true;
+            scene.add(particles);
+
+            centerGeometry = new THREE.Geometry();
+            centerMaterial = new THREE.PointsMaterial({
+                size: 20,
+                sizeAttenuation: false,
+                map: texture,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthTest: false,
+            });
+            centerMaterial.color.setHSL(0.3, 0.8, 0.5);
+            for (i = 0; i < 1000; i++) {
+                var vertex = new THREE.Vector3();
+                vertex.x = Math.random() * 500 - 250;
+                vertex.y = Math.random() * 500 - 250;
+                vertex.z = Math.random() * 500 - 250;
+                centerGeometry.vertices.push(vertex);
+            }
+            centerParticles = new THREE.Points(centerGeometry, centerMaterial);
+            centerParticles.sortParticles = true;
+            scene.add(centerParticles);
+            initOrNot = true;
+        },
+        function (xhr) {},
+        function ( xhr ) {
+            console.log( "加载出错,重新初始化" );
+            init();
+        }
+    );
 }
 
 function isInit() {

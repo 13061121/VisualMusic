@@ -7,14 +7,15 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
         materials, geometries, cubes,
         centerParticles, centerGeometry, centerMaterial,
         littleParticles, littleGeometry, littleMaterial,
+        llittleParticles, llittleGeometry, llittleMaterial,
         outerParticles, outerGeometry, outerMaterial,
-        spotLight,lensFlare2,
+        spotLight,
         textureFlare0 ,textureFlare3,flareColor,
         camera_a, camera_r, camera_d, camera_h, camera_f,
-        i, h, sprite,
+        i, h, sprite,lensFlare,
         rr = 600, r = 100,
-        cr = 300, lr = 30, oradius = 1000,
-        count = 1000, lcount = 500, ocount = 3000,
+        cr = 300, lr = 30,llr=16, oradius = 1000,
+        count = 1200,  ocount = 3000,
         langle = 0, lh = 0,
         data, len=20, total, avg,
         twoPI = 2 * Math.PI,
@@ -85,8 +86,6 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
             cube.rotation.set(Math.PI / 2, ang, 0);
         }
 
-        centerMaterial.color.setHSL(h, 1.0, 1.0);
-
         for (i=0;i<centerGeometry.vertices.length;i++) {
             var vertex = centerGeometry.vertices[i],
                 t = vertex.postiondata[0];
@@ -101,6 +100,10 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
             vertex.postiondata[0] = t;
         }
 
+        centerGeometry.verticesNeedUpdate = true;
+
+        centerMaterial.color.setHSL(((h * 360 + 120) % 360) / 360, 1.0, 0.8);
+
         lh += avg * 0.0005;
         lh %= twoPI;
 
@@ -112,20 +115,16 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
         littleParticles.rotateY(avg*0.0001);
         littleParticles.rotateZ(avg*0.0001);
 
-        //littleMaterial.color.setHSL(((h * 360 + 120) % 360) / 360, 1.0, 1.0);
+        tt =rr+(2*lr-llr+5)*Math.cos(lh);
 
-        // 取消空心小球的粒子运动
-        // for (i=0;i < littleGeometry.vertices.length;i++) {
-        //     var vertex = littleGeometry.vertices[i];
-        //     var alpha = Math.PI * 2 * Math.random(),
-        //         theta = Math.PI * Math.random(),
-        //         t = lr;
-        //     vertex.x = Math.sin(theta) * Math.cos(alpha) * t;
-        //     vertex.y = Math.sin(theta) * Math.sin(alpha) * t;
-        //     vertex.z = Math.cos(theta) * t;
-        // }
+        llittleParticles.position.set(tt * Math.cos(langle), tt * Math.sin(langle), (2*lr-llr+10)*Math.sin(lh));
 
-        //outerMaterial.color.setHSL(((h * 360 + 120) % 360) / 360, 1.0, 1.0);
+        littleMaterial.emissive.setHSL(((h * 360 + 120) % 360) / 360, 0.9, 0.7);
+
+        llittleMaterial.emissive.setHSL(((h * 360 + 200) % 360) / 360, 1.0, 0.8);
+
+        if(outerMaterial!=null)
+            outerMaterial.color.setHSL(((h * 360 + 120) % 360) / 360, 1.0, 0.9);
 
         renderer.render(scene, camera);
     }
@@ -156,10 +155,46 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
         materials = [];
         cubes = [];
 
+        // 添加灯光
 
-        textureFlare0 = THREE.ImageUtils.loadTexture("img/lenflare0_alpha.png");
-        textureFlare3 = THREE.ImageUtils.loadTexture("img/lensflare1.png");
-        flareColor = new THREE.Color(0xffffff);
+        spotLight = new THREE.SpotLight(0xffffff);
+        spotLight.position.set(0, 0, 0);
+        scene.add(spotLight);
+
+
+        function Sunshineinit(){
+
+            // 添加炫目日光效果
+            textureFlare0 =new THREE.TextureLoader().load(
+                "img/lenflare0_alpha.png",
+                function textureFlare3Load(texture1) {
+                    textureFlare3 =new THREE.TextureLoader().load(
+                        "img/lensflare1.png",
+                        function (texture2) {
+
+                            flareColor = new THREE.Color(0xffffff);
+                            lensFlare = new THREE.LensFlare(texture1, 350, 0, THREE.AdditiveBlending, flareColor);
+                            lensFlare.add(texture2, cr, 0, THREE.AdditiveBlending);
+                            lensFlare.position = spotLight.position;
+                            scene.add(lensFlare);
+                        },
+                        function (xhr) {},
+                        function ( xhr ) {
+                            console.log( "加载出错,重新初始化" );
+                            textureFlare3Load();
+                        }
+                    );
+                },
+                function (xhr) {},
+                function ( xhr ) {
+                    console.log( "加载出错,重新初始化" );
+                    Sunshineinit();
+                }
+
+            );
+        };
+
+        Sunshineinit();
 
         // 绘制圆环
 
@@ -178,31 +213,14 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
 
         // 中心发光体
 
-        spotLight = new THREE.SpotLight(0xffffff);
-        spotLight.position.set(0, 0, 0);
-        scene.add(spotLight);
-
-        var lensFlare = new THREE.LensFlare(textureFlare0, 350, 0, THREE.AdditiveBlending, flareColor);
-        lensFlare.add(textureFlare3, cr, 0, THREE.AdditiveBlending);
-        lensFlare.position = spotLight.position;
-        scene.add(lensFlare);
-
         //绘制内部“实心”小球
 
         centerGeometry = new THREE.Geometry();
-        centerMaterial = new THREE.PointCloudMaterial({
-            size: 2,
-            sizeAttenuation: false,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthTest: false,
-        });
-        centerMaterial.color.setHSL(0.3, 0.9, 0.5);
         for (i = 0; i < count; i++) {
             var vertex = new THREE.Vector3(),
                 alpha = Math.PI * 2 * Math.random(),
                 theta = Math.PI * Math.random(),
-                t = Math.random() * cr,
+                t = Math.random() * cr*0.6,
                 k1 = Math.sin(theta) * Math.cos(alpha),
                 k2 = Math.sin(theta) * Math.sin(alpha),
                 k3 = Math.cos(theta);
@@ -212,7 +230,18 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
             vertex.postiondata = [t, k1, k2, k3];
             centerGeometry.vertices.push(vertex);
         }
-        centerParticles = new THREE.PointCloud(centerGeometry, centerMaterial);
+        centerMaterial = new THREE.PointsMaterial({
+            size: 2,
+            color: 0x0000ff,
+            sizeAttenuation: false,
+            transparent: false,
+            blending: THREE.AdditiveBlending,
+            depthTest: false,
+        });
+
+
+        centerMaterial.color.setHSL(0.0, 1.0, 0.8);
+        centerParticles = new THREE.Points(centerGeometry, centerMaterial);
         centerParticles.sortParticles = true;
         scene.add(centerParticles);
 
@@ -225,14 +254,12 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
             torcube =new THREE.Mesh(torGeometry,torMaterial);
         scene.add(torcube);
 
+        // 绘制镂空小球
+
         littleGeometry = new THREE.SphereGeometry(lr,20,20);
-        // littleMaterial = new THREE.MeshBasicMaterial({
-        //     color: 0xcc0000,
-        //     depthTest:true
-        // });
         littleMaterial = new THREE.MeshPhongMaterial({
             opacity:1,
-            color: 0xff0000,
+            color: 0x0000ff,
             emissive: 0xffff00,
             side: THREE.FrontSide,
             shading: THREE.SmoothShading,
@@ -241,72 +268,74 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
         littleParticles = new THREE.Mesh(littleGeometry, littleMaterial);
         scene.add(littleParticles);
 
-        // littleGeometry = new THREE.Geometry();
-        // littleMaterial = new THREE.PointCloudMaterial({
-        //     size: 1,
-        //     sizeAttenuation: false,
-        //     transparent: true,
-        //     blending: THREE.AdditiveBlending,
-        //     depthTest: false,
-        // });
-        // littleMaterial.color.setHSL(0.3, 0.9, 0.5);
-        // for (i = 0; i < lcount; i++) {
-        //     var vertex = new THREE.Vector3(),
-        //         alpha = Math.PI * 2 * Math.random(),
-        //         theta = Math.PI * Math.random(),
-        //         k1 = Math.sin(theta) * Math.cos(alpha),
-        //         k2 = Math.sin(theta) * Math.sin(alpha),
-        //         k3 = Math.cos(theta);
-        //     vertex.x = k1 * lr;
-        //     vertex.y = k2 * lr;
-        //     vertex.z = k3 * lr;
-        //     littleGeometry.vertices.push(vertex);
-        // }
-        // littleParticles = new THREE.PointCloud(littleGeometry, littleMaterial);
-        // littleParticles.sortParticles = true;
-        // scene.add(littleParticles);
+        // 绘制镂空小球内部的小球
+
+        llittleGeometry = new THREE.SphereGeometry(llr,10,10);
+        llittleMaterial = new THREE.MeshPhongMaterial({
+            opacity:1,
+            color: 0xff0000,
+            emissive: 0x00ff00,
+            side: THREE.FrontSide,
+            shading: THREE.SmoothShading
+        });
+        llittleParticles = new THREE.Mesh(llittleGeometry, llittleMaterial);
+        scene.add(llittleParticles);
 
         // 绘制外围的“空心”大球背景
 
-        outerGeometry = new THREE.Geometry();
-        sprite = THREE.ImageUtils.loadTexture( "img/spark1.png" );
-        outerMaterial = new THREE.PointCloudMaterial({
-            size: 25,
-            sizeAttenuation: false,
-            map: sprite,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthTest: false,
-        });
-        outerMaterial.color.setHSL(1.0, 1.0, 1.0);
+        function outSphereinit() {
 
-        var n=Math.ceil(Math.sqrt((ocount-2)/4)),
-            segz = Math.PI/2/n,zangle=0;
+            // 加载sprite
 
-        for (i=-n;i<n+2;i++){
-            var size = (n-Math.abs(i))*4 | 1,
-                segr = twoPI /size,
-                k3 = oradius*Math.cos(zangle),
-                t = oradius*Math.sin(zangle);
-            for(var j=0;j<size;j++){
-                var vertex = new THREE.Vector3(),
-                    rangle = j*segr;
-                    k1 = Math.cos(rangle),
-                    k2= Math.sin(rangle);
-                vertex.x = k1 * t;
-                vertex.y = k2 * t;
-                vertex.z = k3 ;
-                vertex.z = k3 ;
-                outerGeometry.vertices.push(vertex);
-            }
-            zangle+=segz;
-        }
+            sprite = new THREE.TextureLoader().load(
+                "img/spark1.png",
+                function (texture) {
+                    outerGeometry = new THREE.Geometry();
+                    outerMaterial = new THREE.PointsMaterial({
+                        size: 25,
+                        sizeAttenuation: false,
+                        map: texture,
+                        transparent: true,
+                        blending: THREE.AdditiveBlending,
+                        depthTest: false,
+                    });
+                    outerMaterial.color.setHSL(1.0, 1.0, 1.0);
 
-        outerParticles = new THREE.PointCloud(outerGeometry, outerMaterial);
-        outerParticles.sortParticles = true;
-        scene.add(outerParticles);
+                    var n=Math.ceil(Math.sqrt((ocount-2)/4)),
+                        segz = Math.PI/2/n,zangle=0;
 
+                    for (i=-n;i<n+2;i++){
+                        var size = (n-Math.abs(i))*4 | 1,
+                            segr = twoPI /size,
+                            k3 = oradius*Math.cos(zangle),
+                            t = oradius*Math.sin(zangle);
+                        for(var j=0;j<size;j++){
+                            var vertex = new THREE.Vector3(),
+                                rangle = j*segr;
+                            k1 = Math.cos(rangle),
+                                k2= Math.sin(rangle);
+                            vertex.x = k1 * t;
+                            vertex.y = k2 * t;
+                            vertex.z = k3 ;
+                            vertex.z = k3 ;
+                            outerGeometry.vertices.push(vertex);
+                        }
+                        zangle+=segz;
+                    }
 
+                    outerParticles = new THREE.Points(outerGeometry, outerMaterial);
+                    outerParticles.sortParticles = true;
+                    scene.add(outerParticles);
+                },
+                function (xhr) {},
+                function ( xhr ) {
+                    console.log( "加载出错,重新初始化" );
+                    outSphereinit();
+                }
+            );
+        };
+
+        outSphereinit();
 
         initOrNot = true;
     }
