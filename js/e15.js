@@ -220,7 +220,7 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
             var vertex = new THREE.Vector3(),
                 alpha = Math.PI * 2 * Math.random(),
                 theta = Math.PI * Math.random(),
-                t = Math.random() * cr*0.6,
+                t = Math.random() * cr,
                 k1 = Math.sin(theta) * Math.cos(alpha),
                 k2 = Math.sin(theta) * Math.sin(alpha),
                 k3 = Math.cos(theta);
