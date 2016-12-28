@@ -357,6 +357,11 @@ input[type="range"]::-webkit-slider-thumb {
     background-size: cover;
 }
 
+.bg16 {
+    background-image: -webkit-radial-gradient(center, ellipse cover, rgba(0, 0, 0, 0.9) 0%, #000000 100%), url(../img/bg10.jpg);
+    background-size: cover;
+}
+
 @-webkit-keyframes helpBtnAnimation {
     0% {
         -webkit-transform: scale(1);
