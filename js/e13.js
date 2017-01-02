@@ -23,7 +23,7 @@ define(['analyser', 'util'], function (analyser, util) {
         cy = canvas.height / 2;
         var startx = canvas.width * 0.1;
         var starty = canvas.height * 0.9;
-        var processbarWdith = canvas.width * 0.8;
+        var processbarWidth = canvas.width * 0.8;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.globalCompositeOperation = 'lighter';
         var total = 0;
@@ -41,44 +41,7 @@ define(['analyser', 'util'], function (analyser, util) {
 
         rotateAngle += 0.08;
 
-        //绘制进度条
-        ctx.strokeStyle = "rgba(255,255,255,0.7)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(startx, starty);
-        ctx.lineTo(startx + processbarWdith, starty);
-        ctx.closePath();
-        ctx.stroke();
-
-        // 绘制滚动条背景
-        ctx.fillStyle = "rgba(255,255,255,0.2)";
-        ctx.beginPath();
-        ctx.arc(startx + proc * processbarWdith, starty, r2, 0, 2 * Math.PI);
-        ctx.closePath();
-        ctx.fill();
-
-        // 绘制转动的两个半圆弧
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(startx + proc * processbarWdith, starty, 18, rotateAngle, rotateAngle+Math.PI/4);
-        ctx.arc(startx + proc * processbarWdith, starty, 18, rotateAngle+Math.PI/4,rotateAngle,true);
-        ctx.closePath();
-        ctx.stroke();
-
-
-        ctx.beginPath();
-        ctx.arc(startx + proc * processbarWdith, starty, 18, rotateAngle+Math.PI, rotateAngle+5*Math.PI/4);
-        ctx.arc(startx + proc * processbarWdith, starty, 18, rotateAngle+5*Math.PI/4,rotateAngle+Math.PI, true);
-        ctx.closePath();
-        ctx.stroke();
-
-        // 绘制滚动图标
-        ctx.fillStyle = "white";
-        ctx.beginPath();
-        ctx.arc(startx + proc * processbarWdith, starty, 15, 0, 2 * Math.PI);
-        ctx.closePath();
-        ctx.fill();
+        util.drawProcessBar1(ctx,startx,starty,processbarWidth,r2,rotateAngle,proc);
 
         // 绘制music visualizer
         var wid = canvas.width*0.8/len;

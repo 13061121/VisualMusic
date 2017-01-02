@@ -1,7 +1,7 @@
 // 15号可视化效果
 define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
 
-    var cover = 'e15.jpg',
+    var cover = 'e16.jpg',
         camera, scene,
         material, geometry, particle, particles,
         materialProcessbar,geometryProcessbar,meshProcessbars,
@@ -79,12 +79,12 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
     }
 
     function init() {
-        util.setBg(15);
+        util.setBg(16);
 
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2 * SEPARATION * AMOUNTY);
-        camera.position.x = 0.8 * SEPARATION * AMOUNTY;
-        camera.position.y = 0.8 * SEPARATION * AMOUNTY;
-        camera.position.z = 0.2 * SEPARATION * AMOUNTY;
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2 * square_r);
+        camera.position.x = 0.8 * square_r;
+        camera.position.y = 0.8 * square_r;
+        camera.position.z = 0.2 * square_r;
 
         camera.up.x = 0;//相机以哪个方向为上方
         camera.up.y = 0;

@@ -1,5 +1,5 @@
 // 主程序
-require(['util', 'effectdev'], function (util, effect) {
+require(['util', 'effect'], function (util, effect) {
 
 var $body = $('body'),
     $fileList = $('#file-list'),
