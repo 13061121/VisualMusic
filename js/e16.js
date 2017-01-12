@@ -58,6 +58,8 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
 
         materialProcessbar.color.setHSL(((h * 360 + 180) % 360) / 360, 1.0, 0.9);
 
+        proc = 0.00001+proc*0.99999;
+
         for (i = 4; i < 8; i++) {
             meshProcessbars[i].scale.set(proc, 1, 1);
         }
@@ -243,9 +245,7 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
         materialProcessbar = new THREE.MeshBasicMaterial({
             transparent: true,
             opacity: 0.3,
-            color: 0xffffff,
-            side: THREE.FrontSide,
-            shading: THREE.SmoothShading,
+            color: 0xffffff
         });
         meshProcessbars = [];
 
@@ -283,12 +283,7 @@ define(['analyser', 'util', 'renderer'], function (analyser, util, renderer) {
         // 绘制进度条
 
         geometryProcessbar = new THREE.BoxGeometry(1.07 * square_r, 0.01 * square_r, 0.01 * square_r, 1, 1, 1);
-        materialProcessbar = new THREE.MeshBasicMaterial({
-            opacity: 1,
-            color: 0xff00ff,
-            side: THREE.FrontSide,
-            shading: THREE.SmoothShading,
-        });
+        materialProcessbar = new THREE.MeshBasicMaterial({color: 0xffffff});
 
         for (i = 0; i < 4; i++) {
             var meshProcessbar = new THREE.Mesh(geometryProcessbar, materialProcessbar);

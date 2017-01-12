@@ -228,9 +228,25 @@ input[type="range"]::-webkit-slider-thumb {
     background-position: 0 -100px;
 }
 
+#song-pic{
+    position: absolute;
+    float:left;
+    height:60px;
+    opacity: 0;
+    margin: 10px;
+    width: 60px;
+    border :2px solid #05fff0;
+    z-index: 2;
+}
+
+#song-pic.showAndHide {
+    -webkit-animation: songNameAnimation 14s linear forwards;
+}
+
 /*当前歌曲标题名称*/
 #song-name {
-    position: fixed;
+    display: block;
+    float: left;
     text-align: center;
     width: 100%;
     padding: 5px 0;
@@ -243,7 +259,7 @@ input[type="range"]::-webkit-slider-thumb {
     /*为歌曲标题添加阴影*/
     /*text-shadow: -3px 3px 0 #30ABD5;*/
     opacity: 0;
-    top: -50;
+    /*top: -50;*/
 }
 
 #song-name.showAndHide {
@@ -277,7 +293,8 @@ input[type="range"]::-webkit-slider-thumb {
 
 .bg0 {
     background-color: #13242f;
-    background-image: url(../img/bg0.png), -webkit-radial-gradient(center, ellipse cover, rgba(0, 0, 0, 0) 20%, #000000 95%);
+    background-image: url(../img/bg0.png),
+    -webkit-radial-gradient(center, ellipse cover, rgba(0, 0, 0, 0) 20%, #000000 95%);
 }
 
 .bg1 {

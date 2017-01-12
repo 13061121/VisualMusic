@@ -5,6 +5,13 @@ HTML5 music visualization (Chrome only)
 
 Download the files directly or visit the page online [here](https://13061121.github.io/VisualMusic/).
 
+## Requirements
+- Use [JQuery](https://github.com/jquery/jquery) for more easily coding.
+- Use [Requirejs](https://github.com/requirejs/requirejs) to manage js files.
+- Use [Three.js](https://github.com/mrdoob/three.js) to draw 3d effects.
+- Use [Jsmediatags](https://github.com/aadsm/jsmediatags) to resolve music files.
+
+
 ##How to use it
 
 - Drag the files into the browser or click the center to play the music.
